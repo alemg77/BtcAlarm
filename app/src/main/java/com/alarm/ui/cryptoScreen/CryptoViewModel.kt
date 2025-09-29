@@ -47,7 +47,6 @@ class CryptoViewModel(application: Application) : AndroidViewModel(application) 
                 errorMessage = e.message ?: "Error desconocido"
             )
         }
-        delay(5000)
     }
 
     fun fetchForEverBitcoinPrice() {
@@ -56,6 +55,7 @@ class CryptoViewModel(application: Application) : AndroidViewModel(application) 
             try {
                 while (true) {
                     fetchBitcoinPrice()
+                    delay(5000)
                 }
             } catch (e: CancellationException) {    // Job fue cancelado, salir silenciosamente
                 android.util.Log.d("TAGGG", "Fetching cancelled")

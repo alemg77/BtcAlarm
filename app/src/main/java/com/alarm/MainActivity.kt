@@ -11,23 +11,30 @@ import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.Modifier
 import com.alarm.ui.cryptoScreen.CryptoPriceScreen
 import com.alarm.ui.cryptoScreen.CryptoViewModel
 import com.alarm.ui.theme.BtcAlarmTheme
 
 class MainActivity : ComponentActivity() {
+
+    private val isInPip = mutableStateOf(false)
+
+    private lateinit var viewModel: CryptoViewModel
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        viewModel = CryptoViewModel(this.application)
         enableEdgeToEdge()
         setContent {
             BtcAlarmTheme {
-
                 Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
                     CryptoPriceScreen(
                         modifier = Modifier.padding(innerPadding),
-                        viewModel =  CryptoViewModel(this.application),
-                        onEnterPip = { enterPictureInPicture() }
+                        viewModel =  viewModel,
+                        onEnterPip = { enterPictureInPicture() },
+                        isInPip = isInPip,
                     )
                 }
             }
@@ -35,11 +42,10 @@ class MainActivity : ComponentActivity() {
     }
 
     private fun enterPictureInPicture() {
-        val aspectRatio = Rational(1, 1) // Cuadrado
+        val aspectRatio = Rational(3, 2)
         val pipBuilder = PictureInPictureParams.Builder()
             .setAspectRatio(aspectRatio)
             .build()
-
         enterPictureInPictureMode(pipBuilder)
     }
 
@@ -48,6 +54,8 @@ class MainActivity : ComponentActivity() {
         newConfig: Configuration
     ) {
         super.onPictureInPictureModeChanged(isInPictureInPictureMode, newConfig)
+
+        isInPip.value = isInPictureInPictureMode
 
         if (isInPictureInPictureMode) {
             // Ocultar UI no esencial

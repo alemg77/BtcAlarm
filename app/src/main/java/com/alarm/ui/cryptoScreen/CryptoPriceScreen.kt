@@ -18,6 +18,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
@@ -30,32 +31,25 @@ import androidx.compose.ui.unit.dp
 fun CryptoPriceScreen(
     modifier: Modifier = Modifier,
     viewModel: CryptoViewModel,
-    onEnterPip: () -> Unit
+    onEnterPip: () -> Unit,
+    isInPip: MutableState<Boolean>
 ) {
 
     val uiState by viewModel.uiState.collectAsState()
 
-    LaunchedEffect(Unit) {
+    LaunchedEffect(viewModel) {
         viewModel.fetchForEverBitcoinPrice()
     }
 
     when {
-        uiState.isLoading -> {
-            Column(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(16.dp),
-                horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.Center
-            ) {
-                CircularProgressIndicator(modifier = Modifier.size(48.dp))
-                Spacer(modifier = Modifier.height(16.dp))
-                Text("Cargando...")
-            }
-        }
 
-        uiState.isError -> {
-            Text("Error al cargar los datos")
+        isInPip.value && uiState.bitcoinData != null -> {
+            val bitcoinData = uiState.bitcoinData!!
+            BitcoinPriceCard(
+                btcPrice = bitcoinData.usd.toString(),
+                usd24hChange = bitcoinData.usd24hChange,
+                modifier = Modifier.padding(bottom = 16.dp)
+            )
         }
 
         uiState.bitcoinData != null -> {
@@ -84,6 +78,24 @@ fun CryptoPriceScreen(
                     Text(text = "PIP")
                 }
             }
+        }
+
+        uiState.isLoading -> {
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(16.dp),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.Center
+            ) {
+                CircularProgressIndicator(modifier = Modifier.size(48.dp))
+                Spacer(modifier = Modifier.height(16.dp))
+                Text("Cargando...")
+            }
+        }
+
+        uiState.isError -> {
+            Text("Error al cargar los datos")
         }
     }
 }
